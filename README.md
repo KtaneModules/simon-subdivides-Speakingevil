@@ -1,1 +1,1 @@
-# simon-subdivides
+#[ModKit Wiki](../../wiki)
