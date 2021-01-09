@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,6 +41,8 @@ public class SSubScript : MonoBehaviour {
     private IEnumerator flash;
     private bool seq;
     private bool subdiv;
+    private bool updatecol;
+    private int tpscore;
 
     private static int moduleIDCounter;
     private int moduleID;
@@ -100,9 +102,8 @@ public class SSubScript : MonoBehaviour {
                     sequences[0].Add(arrange[0, 0]);
             }
             gridselect = info.GetSerialNumberNumbers().Last();
-            Debug.LogFormat("[Simon Subdivides #{0}] The initial colour is {1}", moduleID, "RBVG"[sequences[0][0]]);
         }
-        else if (subnum % 2 == 0)
+        else if (subnum % 2 == 0 && updatecol)
             sequences[0].Add(firstarrange[(Array.IndexOf(firstarrange, initial) + 1) % 4]);
         else
             sequences[0].Add(initial);
@@ -181,6 +182,7 @@ public class SSubScript : MonoBehaviour {
         flash = Flash(flashseq[0].ToArray(), flashseq[1].ToArray());
         seq = true;
         StartCoroutine(flash);
+        Debug.LogFormat("[Simon Subdivides #{0}] The initial colour is {1}", moduleID, "RBVG"[sequences[0][0]]);
         Debug.LogFormat("[Simon Subdivides #{0}] The positions of the flashing cells are: {1}", moduleID, logseq[0]);
         Debug.LogFormat("[Simon Subdivides #{0}] The colours of the flashing cells are: {1}", moduleID, logseq[1]);
         Debug.LogFormat("[Simon Subdivides #{0}] The sequence of expected inputs, obtained from grid {2}, are: {1}", moduleID, logseq[2], (gridselect + subnum) % 5);
@@ -221,6 +223,7 @@ public class SSubScript : MonoBehaviour {
             {
                 step = 0;
                 module.HandleStrike();
+                updatecol = false;
                 Newseq();
             }
             if(step != sequences[2].Count())
@@ -292,6 +295,7 @@ public class SSubScript : MonoBehaviour {
         step = 0;
         subnum++;
         subdiv = false;
+        updatecol = true;
         Newseq();
     }
 
@@ -354,7 +358,8 @@ public class SSubScript : MonoBehaviour {
         {
             if(commands[i].Length > 3)
             {
-                yield return "sendtochaterror!f Cell" + commands[i] + " does not exist.";
+                yield return "sendtochaterror!f Cell " + commands[i] + " does not exist.";
+                yield break;
             }
             int[] r = new int[3];
             r[0] = "URDL".IndexOf(commands[i][0]);
@@ -402,6 +407,13 @@ public class SSubScript : MonoBehaviour {
         {
             yield return null;
             buttons[s[i]].OnInteract();
+            if (subdiv)
+                tpscore += 2;
+            if (moduleSolved)
+            {
+                tpscore += 2;
+                yield return "awardpointsonsolve " + tpscore;
+            }
             yield return new WaitForSeconds(0.15f);
         }
     }
