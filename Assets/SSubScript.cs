@@ -411,8 +411,7 @@ public class SSubScript : MonoBehaviour {
                 tpscore += 2;
             if (moduleSolved)
             {
-                tpscore += 2;
-                yield return "awardpointsonsolve " + tpscore;
+                yield return "awardpoints " + tpscore;
             }
             yield return new WaitForSeconds(0.15f);
         }
